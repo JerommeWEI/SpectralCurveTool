@@ -1,0 +1,61 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ===== 虚拟环境 =====
+.venv/
+venv/
+env/
+ENV/
+.python-version
+
+# ===== 测试 / 覆盖率 =====
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# ===== IDE / 编辑器 =====
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.kilo/
+
+# ===== Jupyter =====
+.ipynb_checkpoints/
+
+# ===== 操作系统 =====
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== 日志 / 临时 =====
+*.log
+*.tmp
+tmp/
+
+# ===== 本项目临时测试产物（开发调试用，勿提交） =====
+_*_test.py
+_*_test_out.txt
+_smoke_*
+*_out.txt
+
+# ===== 数据文件（防止误提交光谱数据 / 运行时导出结果） =====
+# 被分析数据在 OneDrive，本不应进入仓库；以下为防护性忽略。
+# 如确需提交某样例数据，用 negation 放行：  ! samples/xxx.csv
+*.csv
+*.xlsx
+*.xls
+*.json
+*.dat
+*.rar
+*.zip

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SpectralCurveTool · 使用指南</title>
+<style>
+  :root{
+    --bg:#F8FAFC; --card:#FFFFFF; --trans:#F1F5F9; --fill:#E2E8F0; --border:#E4E7EB;
+    --primary:#1E3A5F; --primary-dark:#152C4A; --primary-light:#2563EB;
+    --accent:#059669; --accent-dark:#047857; --danger:#DC2626;
+    --text:#0F172A; --muted:#64748B;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:"Segoe UI","Microsoft YaHei UI","Microsoft YaHei",Helvetica,Arial,sans-serif;
+    line-height:1.7;font-size:15px;}
+  header{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;
+    padding:36px 40px;}
+  header h1{margin:0 0 8px;font-size:26px;}
+  header p{margin:0;opacity:.85;font-size:14px;}
+  .wrap{max-width:1040px;margin:0 auto;padding:28px 24px 80px;}
+  nav{background:var(--card);border:1px solid var(--border);border-radius:10px;
+    padding:14px 20px;margin-bottom:24px;position:sticky;top:10px;z-index:5;
+    box-shadow:0 1px 3px rgba(15,23,42,.05);}
+  nav b{color:var(--primary);}
+  nav a{color:var(--primary-light);text-decoration:none;margin-right:14px;font-size:13px;white-space:nowrap;}
+  nav a:hover{text-decoration:underline;}
+  h2{color:var(--primary);border-left:5px solid var(--accent);padding-left:12px;
+    margin:34px 0 14px;font-size:21px;}
+  h3{color:var(--primary-dark);margin:22px 0 8px;font-size:17px;}
+  h4{margin:16px 0 6px;font-size:15px;color:var(--text);}
+  p,li{color:var(--text);}
+  code,kbd{font-family:"Cascadia Code",Consolas,monospace;background:var(--trans);
+    border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-size:13px;color:var(--primary-dark);}
+  pre{background:var(--primary-dark);color:#E2E8F0;border-radius:8px;padding:14px 18px;
+    overflow:auto;font-size:13px;line-height:1.5;}
+  pre code{background:transparent;border:0;color:inherit;padding:0;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:10px;
+    padding:16px 20px;margin:12px 0;box-shadow:0 1px 2px rgba(15,23,42,.04);}
+  .card.trans{background:var(--trans);}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px;}
+  th,td{border:1px solid var(--border);padding:8px 12px;text-align:left;vertical-align:top;}
+  th{background:var(--trans);color:var(--muted);font-weight:600;}
+  tr:nth-child(even) td{background:#FCFCFD;}
+  .tag{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:20px;margin-right:6px;}
+  .t-pri{background:rgba(30,58,95,.12);color:var(--primary);}
+  .t-acc{background:rgba(5,150,105,.14);color:var(--accent-dark);}
+  .t-dan{background:rgba(220,38,38,.12);color:var(--danger);}
+  .t-mut{background:var(--fill);color:var(--muted);}
+  .note{border-left:4px solid var(--primary-light);background:rgba(37,99,235,.06);
+    padding:10px 16px;border-radius:0 8px 8px 0;margin:12px 0;}
+  .warn{border-left:4px solid var(--danger);background:rgba(220,38,38,.06);
+    padding:10px 16px;border-radius:0 8px 8px 0;margin:12px 0;}
+  .ok{border-left:4px solid var(--accent);background:rgba(5,150,105,.07);
+    padding:10px 16px;border-radius:0 8px 8px 0;margin:12px 0;}
+  .formula{background:var(--trans);border:1px dashed var(--border);
+    padding:10px 16px;border-radius:8px;font-family:Consolas,monospace;margin:10px 0;text-align:center;}
+  ol,ul{padding-left:22px;}
+  .muted{color:var(--muted);}
+  hr{border:0;border-top:1px solid var(--border);margin:28px 0;}
+  footer{color:var(--muted);font-size:13px;text-align:center;margin-top:40px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>SpectralCurveTool · 使用指南</h1>
+  <p>面向 4108 设备（2560 像素）NIR 光谱 CSV 的桌面对比/校准分析工具 · v1.0</p>
+</header>
+
+<div class="wrap">
+<nav>
+  <b>导航：</b>
+  <a href="#overview">概述</a>
+  <a href="#install">安装与启动</a>
+  <a href="#data">数据格式</a>
+  <a href="#features">功能详解</a>
+  <a href="#calib">校准分析</a>
+  <a href="#workflow">典型工作流</a>
+  <a href="#arch">项目结构</a>
+  <a href="#math">数学原理</a>
+  <a href="#trouble">排错</a>
+</nav>
+
+<!-- ============ 概述 ============ -->
+<h2 id="overview">一、概述</h2>
+<div class="card">
+<p>本工具用于对 <b>4108 近红外光谱仪</b>导出的 CSV 进行<b>可视化对比</b>与<b>校准/映射分析</b>。主要解决：</p>
+<ul>
+  <li><b>多曲线叠加对比</b>：拖入多个 CSV/文件夹，叠加显示，逐条显隐、改色、删除。</li>
+  <li><b>跨量纲混排</b>：原始强度（~千级）与吸光度（~0.2）可在同一图上以<b>双 Y 轴</b>或<b>归一化</b>对比。</li>
+  <li><b>差异量化</b>：相减 / 比值(带下限) / 有界相对偏差 / RMSE 评分。</li>
+  <li><b>校准传递</b>：单组/批量拟合仿射映射 <code>B = m·A + c</code>，按可靠性<b>加权期望</b>求整组系数，并可套用到其它曲线验证。</li>
+</ul>
+<p class="muted">主题采用 Professional Scientific 风格（海军蓝 + 翠绿 + Slate 灰），基于 tkinter + matplotlib。</p>
+</div>
+
+<!-- ============ 安装 ============ -->
+<h2 id="install">二、环境与安装</h2>
+<h3>依赖</h3>
+<pre><code>tkinterdnd2 &gt;= 1.7.0      # 原生拖拽（可选；未装则用按钮加载）
+matplotlib  &gt;= 3.10
+pandas      &gt;= 2.2
+numpy       &gt;= 2.1</code></pre>
+<p>安装：</p>
+<pre><code>pip install -r requirements.txt</code></pre>
+<div class="note"><b>说明</b>：<code>tkinter</code> 随 Python 自带。<code>tkinterdnd2</code> 提供原生拖拽；若安装失败或缺失，程序仍可运行，只是改用「添加文件/文件夹」按钮加载数据。</div>
+
+<h3>启动</h3>
+<p>在项目根目录执行（任选其一）：</p>
+<pre><code>python run.pyw          # 推荐：pythonw 运行，无控制台黑窗
+python -m src           # 等价入口（会带控制台）
+双击 run.pyw            # Windows 直接双击</code></pre>
+<div class="warn"><b>注意</b>：请从<b>项目根目录</b>启动，否则 <code>src</code> 包无法被正确导入。</div>
+
+<!-- ============ 数据格式 ============ -->
+<h2 id="data">三、支持的数据格式</h2>
+<p>4108 导出的 CSV 头格式不统一，本工具采用<b>「定位首个全数值行」</b>的鲁棒策略自动解析，兼容以下变体：</p>
+<table>
+<tr><th>情形</th><th>示例</th><th>处理</th></tr>
+<tr><td>标准两列</td><td><code>CWL,Intensity</code> / <code>Wavelength,Absorbance</code></td><td>自动识别</td></tr>
+<tr><td>带 BOM</td><td><code>﻿Wavelength,Absorbance</code></td><td>UTF-8-sig 去除 BOM</td></tr>
+<tr><td>无名标题行</td><td>首行 <code>,名称</code>，真正表头在第二行</td><td>跳过标题行</td></tr>
+<tr><td>特殊列名</td><td><code>Wavelength[nm]</code> / <code>Log(1/R)</code> / <code>White Reference</code></td><td>按文本判类型</td></tr>
+</table>
+<div class="warn"><b>自动跳过的非光谱文件</b>：<code>coeffA.csv</code> / <code>coeffB.csv</code> 在 <code>4108demo导出</code> 下是<b>单行平铺系数数组</b>（无波长列），会被自动识别并跳过（数据行数值列数 &gt; 2 即判为非光谱），避免解析成 1 点的废曲线。</div>
+<p><b>Y 类型自动判定</b>：表头含 <code>absorb/log(1/r)</code> → 吸光度；含 <code>intensity/reference/dark</code> → 强度；无表头按数值范围（&gt;50 强度，否则吸光度）。</p>
+<p><b>文件夹加载</b>：递归收集 <code>*.csv</code>，自动<b>排除 <code>tmp</code> 目录</b>。</p>
+
+<!-- ============ 功能详解 ============ -->
+<h2 id="features">四、功能详解</h2>
+
+<h3>4.1 数据加载（左侧「数据加载」区）</h3>
+<ul>
+  <li><span class="tag t-acc">拖拽</span> 把 CSV 文件或文件夹拖到拖拽区（或整个窗口任意位置）。</li>
+  <li><span class="tag t-mut">按钮</span> <b>添加文件</b> / <b>添加文件夹</b>（递归）/ <span class="tag t-dan">清空</span>（删除全部已加载曲线）。</li>
+</ul>
+
+<h3>4.2 曲线列表</h3>
+<table>
+<tr><th>操作</th><th>效果</th></tr>
+<tr><td>点击 <code>显示</code> 列（☑/☐）</td><td>切换该曲线的显示/隐藏</td></tr>
+<tr><td>双击一行</td><td>弹出取色器，修改该曲线颜色</td></tr>
+<tr><td>选中后按 <kbd>Delete</kbd></td><td>删除该曲线</td></tr>
+<tr><td><b>右键</b>任意行</td><td>弹出菜单：切换显示 / 更改颜色… / 删除选中曲线</td></tr>
+</table>
+<p class="muted">行文字颜色 = 曲线颜色，便于与画布图例对应。</p>
+
+<h3>4.3 绘图选项</h3>
+<h4>Y 轴模式</h4>
+<table>
+<tr><th>模式</th><th>用途</th></tr>
+<tr><td><b>原值</b></td><td>按原始数值绘制（同类型曲线对比）</td></tr>
+<tr><td><b>归一化 0–1</b></td><td>每条曲线各自 min-max 归一化，消除幅度差异、比形状</td></tr>
+<tr><td><b>强度·吸光度双轴</b></td><td>同时含两类时，强度走左轴、吸光度走右轴（twinx）</td></tr>
+</table>
+<p>另含 <b>网格</b> / <b>图例</b> 开关。画布上方工具栏自带缩放/平移/坐标取值/保存。</p>
+
+<h3>4.4 差值分析（差值基准 + 差值方式）</h3>
+<p>先在「差值基准」选一条作基准曲线，再选「差值方式」。底部出现独立子图：</p>
+<table>
+<tr><th>方式</th><th>公式</th><th>参考线</th><th>说明</th></tr>
+<tr><td><b>相减</b></td><td><code>y − base</code></td><td>y=0</td><td>绝对差值</td></tr>
+<tr><td><b>比值(带下限)</b></td><td><code>y / max(|base|, 5%峰)</code></td><td>y=1</td><td>相对倍数；分母设下限防爆</td></tr>
+<tr><td><b>有界相对偏差</b></td><td><code>(y−base)/(|y|+|base|)</code></td><td>y=0</td><td>恒在 [-1,1]；y=base 处为 0；<code>0/0</code> 填 0</td></tr>
+<tr><td><b>RMSE(归一化)</b></td><td><code>√mean((yₙ−baseₙ)²)</code></td><td>—</td><td>标量；底部显示<b>评分表</b>（每条 vs 基准，按相似度排序）</td></tr>
+</table>
+<div class="note"><b>右侧「清空显示」按钮</b>：隐藏画布全部曲线，但保留已加载列表（与左侧「清空」不同，后者删除全部数据）。</div>
+
+<!-- ============ 校准分析 ============ -->
+<h2 id="calib">五、校准分析（左侧「校准分析」区，三个窗口）</h2>
+<p>核心思想：两条归一化后形状一致的曲线，在原始尺度上必为<b>仿射关系 <code>B = m·A + c</code></b>（见<a href="#math">数学原理</a>）。<b>m</b>=增益（积分时间/光源/探测器/浓度），<b>c</b>=基线（暗电流/杂散光）。</p>
+
+<h3>5.1 映射 / 校准 A→B（单组）</h3>
+<ol>
+  <li>选曲线 A、B（下拉框宽度自适应文件名）。</li>
+  <li>自动在 A、B 波长重叠区间最小二乘拟合 <code>B ≈ m·A + c</code>。</li>
+  <li>结果行给出 <b>m、c、R²、Pearson r、残差RMS</b> + 自动判断（R²&gt;0.999 良好 / &gt;0.95 部分吻合 / 否则勿用）。</li>
+  <li>三张子图：① 原始 A vs B；② 映射后 A′=mA+c vs B（应重合）；③ 残差 ε=B−A′。</li>
+  <li>「导出结果」→ CSV（含 m,c,R²,r + 逐波长表）。</li>
+</ol>
+
+<h3>5.2 批量映射（求平均/期望）</h3>
+<p>对<b>多组</b> A→B 各自拟合，再<b>聚合</b>得到整组映射系数。</p>
+<h4>配对构建</h4>
+<ul>
+  <li><span class="tag t-mut">手动</span> 源 A + 目标 B →「添加配对」。</li>
+  <li><span class="tag t-acc">智能</span> <b>智能配对 S1–S6</b>：以当前所选源/目标参考曲线的<b>文件夹 + 变体后缀</b>分组，自动匹配 S1↔S1 … S6↔S6（排除 <code>_absorbance</code>/<code>_raw</code> 混配）。</li>
+</ul>
+<h4>聚合方式（关键）</h4>
+<table>
+<tr><th>方式</th><th>公式</th><th>特点</th></tr>
+<tr><td><b>期望(残差倒数加权)</b> <span class="tag t-acc">默认</span></td><td><code>wᵢ=1/RMSᵢ²，E=Σwᵢxᵢ/Σwᵢ</code></td><td>反方差加权=最大似然合并；<b>残差越小权重越大</b>，高偏差组被压低，不被离群带偏</td></tr>
+<tr><td>平均(算术)</td><td><code>mean</code></td><td>等权，易被坏组拉偏</td></tr>
+<tr><td>中位数</td><td><code>median + 标准化MAD</code></td><td>最抗离群</td></tr>
+</table>
+<p>结果表给出每组 m/c/R²/r + 聚合行 + 离散度行；子图网格<b>每组单独一张残差图</b>（不叠加）。</p>
+
+<h3>5.3 批量校准验证（套用系数）</h3>
+<p>把已知 <code>(m, c)</code> 套到一组源曲线，与目标组逐配对对比，验证系数好坏。</p>
+<h4>系数来源（3 个按钮）</h4>
+<ul>
+  <li><b>使用上次 A→B 结果</b>：单组拟合结果。</li>
+  <li><b>使用批量映射平均</b>：本会话批量映射的聚合系数。</li>
+  <li><b>从 CSV 导入系数</b>：读取「批量映射」或「映射 A→B」导出的 CSV（自动取其平均值/系数）。</li>
+</ul>
+<h4>输出（两个标签页）</h4>
+<ul>
+  <li><b>残差叠加</b>：各配对残差叠一张图 + 逐配对 RMS/R²/r 表 + 平均/最大 RMS 汇总。</li>
+  <li><b>还原曲线对比</b>：<span class="tag t-mut">在配对列表多选</span>要看的曲线，显示 <b>源 A（黑虚线）/ 校准 A′=mA+c（粗实线）/ 目标 B（粗实线）</b>——校准好的话 A′ 与 B 重合。</li>
+</ul>
+
+<h3>5.4 导出</h3>
+<table>
+<tr><th>入口</th><th>导出内容</th></tr>
+<tr><td>主窗口「导出 PNG」</td><td>当前画布图片</td></tr>
+<tr><td>主窗口「导出汇总 CSV」</td><td>公共波长网格 + 各可见曲线插值对齐</td></tr>
+<tr><td>映射 A→B「导出结果」</td><td>m,c,R²,r + 逐波长 A/B/A′/ε</td></tr>
+<tr><td>批量映射「导出结果」</td><td>聚合 m,c（含方式标注）+ 离散度 + 每组明细</td></tr>
+</table>
+
+<!-- ============ 工作流 ============ -->
+<h2 id="workflow">六、典型工作流</h2>
+<div class="card trans">
+<h4>流程 A：曲线叠加对比</h4>
+<p>拖入文件夹 → 曲线列表勾选关心的几条 → Y 轴模式选「双轴」或「归一化」→ 工具栏缩放查看 → 导出 PNG。</p>
+</div>
+<div class="card trans">
+<h4>流程 B：求相似度</h4>
+<p>差值基准选一条 → 差值方式选 <b>RMSE(归一化)</b> → 底部评分表按相似度排序，看谁最像。</p>
+</div>
+<div class="card trans">
+<h4>流程 C：校准传递（完整闭环）</h4>
+<ol>
+  <li><b>批量映射（求平均）</b>：智能配对 S1–S6 → 聚合方式选「期望」→ 得整组 m、c → 导出 CSV。</li>
+  <li><b>批量校准验证</b>：「从 CSV 导入系数」读入上一步的平均值 → 计算残差 RMS。</li>
+  <li>切「还原曲线对比」页，多选曲线看 A′ 是否与 B 重合 → 判断系数是否可推广到整批。</li>
+</ol>
+</div>
+
+<!-- ============ 项目结构 ============ -->
+<h2 id="arch">七、项目结构</h2>
+<pre><code>SpectralCurveTool/
+├── run.pyw              # 入口（根目录唯一可执行入口）
+├── requirements.txt     # 依赖
+├── ReadMe.md            # 项目说明
+├── .gitignore
+├── src/                 # 源码包
+│   ├── __init__.py      # 导出 launch / SpectrumApp
+│   ├── theme.py         # Professional Scientific 主题（配色/字体/圆角按钮/ttk 样式）
+│   ├── csv_loader.py    # 鲁棒 CSV 解析 + Curve 数据结构 + load_paths
+│   └── app.py           # 主 GUI（数据加载/绘图/差值/校准分析三窗口）
+└── SOP/
+    └── Guide.html       # 本文档</code></pre>
+<p><b>模块职责</b>：</p>
+<ul>
+  <li><code>theme.py</code>：主题常量 <code>THEME_COLORS/THEME_FONTS</code>、<code>RoundedButton</code>、<code>apply_theme()</code>。</li>
+  <li><code>csv_loader.py</code>：<code>load_curve()</code>（定位首个全数值行）、<code>load_paths()</code>（文件/文件夹/tmp 排除）、<code>Curve</code>。</li>
+  <li><code>app.py</code>：<code>SpectrumApp</code> 主类，含主视图与「映射/批量映射/批量验证」三个分析窗口及全部绘图/导出逻辑。</li>
+</ul>
+
+<!-- ============ 数学原理 ============ -->
+<h2 id="math">八、数学原理速览</h2>
+
+<h3>8.1 仿射映射（为什么归一化后一致 ⟺ 仿射关系）</h3>
+<div class="formula">min-max 归一化 n(y)=(y−min)/(max−min) 对仿射变换不变：<br>
+若 B = m·A + c（m&gt;0），则 n(B) ≡ n(A)</div>
+<p>故「归一化后一致、原始不同」⟺ A、B 为仿射关系。映射 A→B = 求 (m,c) = <b>线性回归/仪器校准</b>。m=增益，c=基线。</p>
+
+<h3>8.2 加权期望（反方差合并）</h3>
+<div class="formula">E[x] = Σ(wᵢ·xᵢ) / Σ(wᵢ)，  wᵢ = 1 / RMSᵢ²</div>
+<p>把每组拟合当成方差 ∝ RMS² 的高斯测量做<b>最大似然合并</b>：残差小（可靠）的组权重大，残差大（偏差）的组权重趋零，因此<b>不被离群带偏</b>——这正是区别于等权算术平均的关键。</p>
+
+<h3>8.3 有界相对偏差</h3>
+<div class="formula">D = (y − base) / (|y| + |base|)  ∈ [−1, 1]</div>
+<p>y=base 时 D=0（一致）；两值同时为 0 的退化点 <code>0/0</code> 填 0（语义上等于一致），避免 NaN/inf 尖峰。</p>
+
+<h3>8.4 RMSE（归一化）</h3>
+<div class="formula">RMSE = √( mean( (yₙ − baseₙ)² ) )，  0 = 完全一致</div>
+<p>两条曲线各自 min-max 归一化后、对齐波长网格计算。越小越相似。</p>
+
+<!-- ============ 排错 ============ -->
+<h2 id="trouble">九、排错</h2>
+<table>
+<tr><th>现象</th><th>原因 / 处理</th></tr>
+<tr><td><code>ModuleNotFoundError: src</code></td><td>未在项目根目录启动。请 <code>cd</code> 到根目录再 <code>python run.pyw</code>。</td></tr>
+<tr><td>拖拽无反应</td><td><code>tkinterdnd2</code> 未装。<code>pip install tkinterdnd2</code>，或改用「添加文件」按钮。</td></tr>
+<tr><td>图例出现方框（缺字符）</td><td>个别符号在某些字体缺失；本工具已尽量用通用符号，可忽略。</td></tr>
+<tr><td>曲线点数异常（如 1 点）</td><td>该文件可能是单行系数数组（非光谱），会被自动跳过；若仍出现，检查 CSV 是否两列。</td></tr>
+<tr><td>中文乱码（matplotlib）</td><td>系统缺中文字体；<code>app.py</code> 已配置 <code>Microsoft YaHei/SimHei</code>，一般无需处理。</td></tr>
+<tr><td>批量验证配对混乱</td><td>请用「智能配对 S1–S6」或「添加配对」显式构建；切勿依赖下标。</td></tr>
+</table>
+
+<hr>
+<footer>
+  SpectralCurveTool · 内部研发文档 · 如有疑问请联系维护者
+</footer>
+</div>
+</body>
+</html>
