@@ -65,7 +65,7 @@
 <body>
 <header>
   <h1>SpectralCurveTool · 使用指南</h1>
-  <p>面向 4108 设备（2560 像素）NIR 光谱 CSV 的桌面对比/校准分析工具 · v1.0</p>
+  <p>面向 4108 设备（2560 像素）NIR 光谱 CSV 的桌面对比/校准分析工具 · v1.1</p>
 </header>
 
 <div class="wrap">
@@ -163,7 +163,7 @@ python -m src           # 等价入口（会带控制台）
 <tr><td><b>相减</b></td><td><code>y − base</code></td><td>y=0</td><td>绝对差值</td></tr>
 <tr><td><b>比值(带下限)</b></td><td><code>y / max(|base|, 5%峰)</code></td><td>y=1</td><td>相对倍数；分母设下限防爆</td></tr>
 <tr><td><b>有界相对偏差</b></td><td><code>(y−base)/(|y|+|base|)</code></td><td>y=0</td><td>恒在 [-1,1]；y=base 处为 0；<code>0/0</code> 填 0</td></tr>
-<tr><td><b>RMSE(归一化)</b></td><td><code>√mean((yₙ−baseₙ)²)</code></td><td>—</td><td>标量；底部显示<b>评分表</b>（每条 vs 基准，按相似度排序）</td></tr>
+<tr><td><b>RMSE(原值)</b></td><td><code>√mean((yₙ−baseₙ)²)</code></td><td>—</td><td>标量；原始吸光度空间；底部显示<b>评分表</b>（每条 vs 基准，按 RMSE 升序）</td></tr>
 </table>
 <div class="note"><b>右侧「清空显示」按钮</b>：隐藏画布全部曲线，但保留已加载列表（与左侧「清空」不同，后者删除全部数据）。</div>
 
@@ -227,7 +227,7 @@ python -m src           # 等价入口（会带控制台）
 </div>
 <div class="card trans">
 <h4>流程 B：求相似度</h4>
-<p>差值基准选一条 → 差值方式选 <b>RMSE(归一化)</b> → 底部评分表按相似度排序，看谁最像。</p>
+<p>差值基准选一条 → 差值方式选 <b>RMSE(原值)</b> → 底部评分表按 RMSE 升序排列，看谁最像基准。</p>
 </div>
 <div class="card trans">
 <h4>流程 C：校准传递（完整闭环）</h4>
@@ -275,9 +275,9 @@ python -m src           # 等价入口（会带控制台）
 <div class="formula">D = (y − base) / (|y| + |base|)  ∈ [−1, 1]</div>
 <p>y=base 时 D=0（一致）；两值同时为 0 的退化点 <code>0/0</code> 填 0（语义上等于一致），避免 NaN/inf 尖峰。</p>
 
-<h3>8.4 RMSE（归一化）</h3>
-<div class="formula">RMSE = √( mean( (yₙ − baseₙ)² ) )，  0 = 完全一致</div>
-<p>两条曲线各自 min-max 归一化后、对齐波长网格计算。越小越相似。</p>
+<h3>8.4 RMSE（原值）</h3>
+<div class="formula">RMSE = √( mean( (yₙ − baseₙ)² ) )，  0 = 完全一致，单位 = Absorbance</div>
+<p>在原始吸光度空间计算：基准曲线插值到对方波长网格后逐点相减求均方根。越小越接近基准。</p>
 
 <!-- ============ 排错 ============ -->
 <h2 id="trouble">九、排错</h2>

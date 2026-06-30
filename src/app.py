@@ -266,7 +266,7 @@ class SpectrumApp:
         r2b = ttk.Frame(opt); r2b.pack(fill='x', pady=4)
         ttk.Label(r2b, text='差值方式：').pack(side='left')
         self._diff_combo = ttk.Combobox(r2b, textvariable=self._diffmode, state='readonly', width=14,
-                                        values=('相减', '比值(带下限)', '有界相对偏差', 'RMSE(归一化)'))
+                                        values=('相减', '比值(带下限)', '有界相对偏差', 'RMSE(原值)'))
         self._diff_combo.pack(side='left', padx=6)
         self._diff_combo.bind('<<ComboboxSelected>>', lambda e: self._redraw())
 
@@ -518,32 +518,31 @@ class SpectrumApp:
             method = self._diffmode.get()
             base_c = base_entry['curve']
 
-            if method == 'RMSE(归一化)':
-                # 标量相似度：每条曲线 vs 基准的归一化 RMSE，底部子图画评分表
-                # RMSE 始终在 [0,1] 归一化空间计算（不受 Y 轴模式影响）；0 = 完全一致
-                base_norm = _normalize(base_c.y)
+            if method == 'RMSE(原值)':
+                # 标量相似度：每条曲线 vs 基准的原始吸光度空间 RMSE，底部子图画评分表
+                # 始终用原始 Y 值计算（不受 Y 轴模式影响）；0 = 完全一致，单位 = Absorbance
+                base_y = base_c.y
                 rows = []
                 for e in visible:
                     if e is base_entry:
                         continue
-                    yn = _normalize(e['curve'].y)
-                    bn = np.interp(e['curve'].x, base_c.x, base_norm)
+                    yn = e['curve'].y
+                    bn = np.interp(e['curve'].x, base_c.x, base_y)
                     rows.append((e['curve'].name, float(np.sqrt(np.mean((yn - bn) ** 2)))))
                 rows.sort(key=lambda t: t[1])  # RMSE 升序：越像越靠前
                 axd.set_facecolor(C['card'])
                 axd.axis('off')
-                axd.set_title('相对基准「%s」的归一化 RMSE（越小越相似）' % base_name,
+                axd.set_title('相对基准「%s」的原始吸光度 RMSE（越小越相似）' % base_name,
                               fontsize=10, color=C['text'], pad=8)
                 if rows:
-                    cell_text = [[name, '%.4f' % r, '%.1f%%' % ((1 - r) * 100)]
-                                 for name, r in rows]
+                    cell_text = [[name, '%.5f' % r] for name, r in rows]
                     tbl = axd.table(cellText=cell_text,
-                                    colLabels=['曲线', 'RMSE', '相似度 (1−RMSE)'],
+                                    colLabels=['曲线', 'RMSE'],
                                     loc='upper center', cellLoc='center', colLoc='center')
                     tbl.auto_set_font_size(False)
                     tbl.set_fontsize(9)
                     tbl.scale(1, 1.35)
-                    for k in range(3):  # 表头加深底
+                    for k in range(2):  # 表头加深底
                         tbl[(0, k)].set_facecolor(C['card_translucent'])
                 else:
                     axd.text(0.5, 0.4, '无其他可见曲线可对比', transform=axd.transAxes,

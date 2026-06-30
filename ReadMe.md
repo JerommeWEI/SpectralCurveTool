@@ -8,7 +8,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-059669)](LICENSE)
 [![tkinter](https://img.shields.io/badge/GUI-tkinter%20%2B%20matplotlib-1E3A5F)]()
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey)]()
-[![Status](https://img.shields.io/badge/status-v1.0%20internal-2563EB)]()
+[![Status](https://img.shields.io/badge/status-v1.1%20internal-2563EB)]()
 
 ---
 
@@ -100,7 +100,7 @@ SpectralCurveTool/
 - **仿射映射**：归一化后形状一致 ⟺ 原始尺度上 `B = m·A + c`（m=增益，c=基线）。映射即线性回归/仪器校准。
 - **加权期望**（反方差合并）：`E[x] = Σwᵢxᵢ/Σwᵢ`，`wᵢ = 1/RMSᵢ²`。残差越小权重越大，**不被离群带偏**，优于等权平均。
 - **有界相对偏差**：`D = (y−base)/(|y|+|base|) ∈ [-1,1]`，`0/0` 填 0，避免尖峰。
-- **RMSE（归一化）**：`√mean((yₙ−baseₙ)²)`，越小越相似。
+- **RMSE（原值）**：`√mean((yₙ−baseₙ)²)`，原始吸光度空间；0 = 完全一致，越小越相似。
 
 ---
 
